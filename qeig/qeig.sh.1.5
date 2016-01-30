@@ -1,0 +1,206 @@
+#!/bin/bash
+###############################################################
+####################### Descriptions ##########################
+#This script read in the "bands.dat" file generated from bands.x
+#and arrange the eigenvalues in the output file "eigenvalue",
+#we also read in the kpoints in "bands.dat" file, calculate the
+#length of kpath, and output in the "eigenvalue" file. You can
+#use the date in "eigenvalue" file to plot bandstructures
+###############################################################
+#Author: Meng Wu, Ph.D. Candidate in Physics
+#Affiliation: University of California, Berkeley
+#Date: Oct. 24, 2014
+#Verison: 1.5
+###############################################################
+#if num of segment is 1, then we won't increase Klength!
+###############################################################
+######################### Variables ###########################
+QEINPUT="QE.in"
+QEOUTPUT="QE.out"
+INFILE="bands.dat"
+KPTFILE="Klength.dat"
+EIGFILE="Eig.dat"
+EIGSHIFTFILE="Eig.shift.dat"
+TEMPEIGFILE="tempEig.dat"
+BANDSFILE="eigenvalue"
+BANDSSHIFTFILE="eigenvalue.shift"
+FERMIENERGYFILE="../nscf/QE.out"
+Helper1="helper1.dat"
+Helper2="helper2.dat"
+#length unit in QE
+if [ -z $1 ]; then
+   alat=$(grep 'alat' ${QEOUTPUT} | head -1 | awk '{print $5}' )
+   bohrradius=0.52917721092
+   transconstant=$(echo $alat $bohrradius | awk '{print $1*$2}')
+   echo "alat is $transconstant Angstrom"
+else
+   transconstant=$1
+   echo "alat is $transconstant Angstrom"
+fi
+###############################################################
+#######################  File clearance  ######################
+if [ -f $EIGFILE ]; then
+   rm -f $EIGFILE
+fi
+
+if [ -f $KPTFILE ]; then
+   rm -f $KPTFILE
+fi
+
+if [ -f $TEMPEIGFILE ]; then
+   rm -f $TEMPEIGFILE
+fi
+
+if [ -f $BANDSFILE ]; then
+   rm -f $BANDSFILE
+fi
+
+if [ -f $Helper1 ]; then
+   rm -f $Helper1
+fi
+
+if [ -f $Helper2 ]; then
+   rm -f $Helper2
+fi
+###############################################################
+#Find the fermi energy from a previous nscf calculation
+if [ -d $FERMIENERGYFILE ]; then
+   echo "Reading Fermi level from ../nscf/QE.out ..."
+   if [ ! -z $(grep "Fermi" $FERMIENERGYFILE) ];then
+      EFermi=$(grep "Fermi" $FERMIENERGYFILE | awk '{print $5}')
+      echo "Find Fermi energy: Ef = $EFermi "
+   else
+      echo "Cannot find Fermi energy:"
+      echo "Maybe you use "fixed" occupation or your calculation failed"
+   fi
+else
+   echo "Cannot find ../nscf/QE.out"
+   echo "Set Ef = 0"
+   EFermi=0
+fi
+###############################################################
+#Find "reciprocal axes in cartesian coordinates" module and read the starting point for each segment
+b1x=$(grep "b(1)" $QEOUTPUT | awk '{print $4}')
+b1y=$(grep "b(1)" $QEOUTPUT | awk '{print $5}')
+b1z=$(grep "b(1)" $QEOUTPUT | awk '{print $6}')
+b2x=$(grep "b(2)" $QEOUTPUT | awk '{print $4}')
+b2y=$(grep "b(2)" $QEOUTPUT | awk '{print $5}')
+b2z=$(grep "b(2)" $QEOUTPUT | awk '{print $6}')
+b3x=$(grep "b(3)" $QEOUTPUT | awk '{print $4}')
+b3y=$(grep "b(3)" $QEOUTPUT | awk '{print $5}')
+b3z=$(grep "b(3)" $QEOUTPUT | awk '{print $6}')
+echo "b3z = $b3z"
+###############################################################
+#Find high-symmetry points from $QEINPUT and convert it into cartesian coordinates
+NumHiSymP=$(grep -A 1 "K_POINTS" $QEINPUT | tail -1 | awk '{print $1}')
+#it is actually the first High Symmetry Point
+HiSymCounter=2 
+FlagChangeStartingPoint=1
+BaseLength=0.0
+KLength=0
+###############################################################
+numofbnds=$(sed -n '1p' $INFILE | awk '{print $3}' | awk -F"," '{print $1}' )
+numofkpts=$(sed -n '1p' $INFILE | awk '{print $5}')
+echo "=============================================================="
+echo "number of kpoints = $numofkpts, number of bands = $numofbnds"
+echo "=============================================================="
+numoflines=$(echo $numofbnds | awk '{print int($1/10)+1}')
+###############################################################
+#####################Loop over kpoints#########################
+#Take special notice of HiSymCounter=2, which is the first one
+for ((i=1;i<=$numofkpts;i++))
+do
+kptline=$(echo $numoflines $i | awk '{print 2+($1+1)*($2-1)}')
+
+if [ $FlagChangeStartingPoint -eq 1 ]; then
+
+if [ $HiSymCounter -eq 2 ]; then
+   kpttargetline=$(echo $numoflines $i | awk '{print 2+($1+1)*$2}')
+else
+   kpttargetline=$kptline
+fi
+
+#Read in the high symmetry points in crystal fractional coordinate
+Gx0=$(grep -A $HiSymCounter "K_POINTS" $QEINPUT | tail -1 | awk '{print $1}')
+Gy0=$(grep -A $HiSymCounter "K_POINTS" $QEINPUT | tail -1 | awk '{print $2}')
+Gz0=$(grep -A $HiSymCounter "K_POINTS" $QEINPUT | tail -1 | awk '{print $3}')
+
+segmentlength=$(grep -A $HiSymCounter "K_POINTS" $QEINPUT | tail -1 | awk '{print $4}')
+echo $segmentlength >> $Helper1
+###########counter for the number of segments
+segmentcounter=0
+###########Switch off the flag for changing the starting point
+FlagChangeStartingPoint=0
+###########Update High symmetry pointer counter
+HiSymCounter=$(echo $HiSymCounter | awk '{print $1+1}')
+
+#echo "kptline = $kptline"
+#echo "$(sed -n "$kptline p" $INFILE)" >> $KPTFILE
+#Read in the next point in cartesian coordinate
+Gx=$(sed -n "$kpttargetline p" $INFILE | awk '{print $1}')
+Gy=$(sed -n "$kpttargetline p" $INFILE | awk '{print $2}')
+Gz=$(sed -n "$kpttargetline p" $INFILE | awk '{print $3}')
+
+#High symmetry kpoint in cartesian coordinate
+Kx=$(echo $Gx0 $Gy0 $Gz0 $b1x $b2x $b3x | awk '{printf("%3.8f\n",$1*$4+$2*$5+$3*$6)}')
+Ky=$(echo $Gx0 $Gy0 $Gz0 $b1y $b2y $b3y | awk '{printf("%3.8f\n",$1*$4+$2*$5+$3*$6)}')
+Kz=$(echo $Gx0 $Gy0 $Gz0 $b1z $b2z $b3z | awk '{printf("%3.8f\n",$1*$4+$2*$5+$3*$6)}')
+
+#Delta G in cartesian coordinates
+DGx=$(echo $Gx $Kx | awk '{print $1-$2}')
+DGy=$(echo $Gy $Ky | awk '{print $1-$2}')
+DGz=$(echo $Gz $Kz | awk '{print $1-$2}')
+
+DLength=$(echo $DGx $DGy $DGz | awk '{printf("%3.8f\n",sqrt($1*$1+$2*$2+$3*$3))}')
+fi
+
+if [ $i -eq 1 -o $segmentlength -eq 1 ];then
+KLength=$(echo $KLength| awk '{print $1}' )
+else
+KLength=$(echo $KLength $DLength | awk '{print $1+$2}' )
+fi
+#transform into VASP unit
+KLengthout=$(echo $KLength $transconstant | awk '{print $1/$2}')
+echo -e "$KLengthout " >> $KPTFILE
+
+eigstartline=$(echo $numoflines $i | awk '{print 3+($1+1)*($2-1)}')
+#echo $eigstartline
+eigendline=$(echo $numoflines $i | awk '{print 2+$1+($1+1)*($2-1)}')
+#echo $eigendline
+
+for ((j=$eigstartline;j<$eigendline+1;j++))
+do
+echo -n -e "$(sed -n "$j p" $INFILE)" >> $TEMPEIGFILE
+done
+echo -e "" >> $TEMPEIGFILE
+################################################################
+####################Sorting the eigenvalues#####################
+tail -1 $TEMPEIGFILE | awk ' {split( $0, a, " " ); asort( a ); for( i = 1; i <= length(a); i++ ) printf( "%s ", a[i] ); printf( "\n" ); }'>> $EIGFILE
+################################################################
+#Judge if we need to turn on the $FlagChangeStartingPoint
+segmentcounter=$(echo $segmentcounter | awk '{print $1+1}')
+if [ $HiSymCounter -eq 3 ];then
+   if [ $segmentcounter -gt $segmentlength ]; then
+      FlagChangeStartingPoint=1
+   fi
+else
+   if [ $segmentcounter -eq $segmentlength ]; then
+      FlagChangeStartingPoint=1
+   fi
+fi
+done
+################################################################
+############## Paste the klength and eigs together #############
+echo $numofkpts $numofbnds $(tail -1 $KPTFILE) > $Helper2
+paste -d" " $KPTFILE $EIGFILE > $BANDSFILE
+################################################################
+############ Set Fermi energy as the reference energy ##########
+awk '{
+     for (i=1;i<='${numofbnds}';i++){
+         printf("%3.6f ",$i-('${EFermi}'))
+     }
+     printf("\n")
+}' $EIGFILE > $EIGSHIFTFILE
+paste -d" " $KPTFILE $EIGSHIFTFILE > $BANDSSHIFTFILE
+################################################################
+echo "========================Finished!============================"
