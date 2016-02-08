@@ -86,6 +86,8 @@ if [ -f $FERMIENERGYFILE ]; then
     else
         echo "Cannot find Fermi energy:"
         echo "Maybe you use \"fixed\" occupation or your calculation failed"
+        echo "Set Ef = 0"
+        EFermi=0
     fi
 else
     echo "Cannot find ../nscf/QE.out"
