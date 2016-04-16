@@ -185,7 +185,14 @@ do
         echo "========================================================"
         echo "High symmetry points in crystal fractional coordinate:"
         echo "G0 = ($Gx0, $Gy0, $Gz0)"
-        segmentlength=$(grep -a --text -A $HiSymCounter "K_POINTS" $QEINPUT | tail -1 | awk '{print $4}')
+
+        if [ $numofkpts == 1 ]; then
+            echo "There is only 1 kpoint !"
+            segmentlength=0
+        else
+            segmentlength=$(grep -a --text -A $HiSymCounter "K_POINTS" $QEINPUT | tail -1 | awk '{print $4}')
+        fi
+
         echo $segmentlength >> $Helper1
 ###########counter for the number of segments
         segmentcounter=0
