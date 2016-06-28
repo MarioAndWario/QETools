@@ -71,6 +71,8 @@ while true ; do
             esac
             prefix=$(grep "prefix" "${DIRname}/IN.q" | awk -F"[']" '{print $2}')
             rm -rf ${DIRname}/${prefix}.wfc*
+            rm -rf ${DIRname}/${prefix}.mix*
+            rm -rf ${DIRname}/${prefix}.igk*
             ;;
         -l|--log)
             case "$2" in
