@@ -20,7 +20,7 @@
 # ======
 # getopt just like a rearrangement of string
 
-TEMP=`getopt -o ha::w::l:: --long --help,all::,wfn::,log:: -n 'Some errors!' -- "$@"`
+TEMP=`getopt -o ha::W::w::l:: --long --help,all::,wfn::,wfc::,log:: -n 'Some errors!' -- "$@"`
 #echo "${TEMP}"
 eval set -- "$TEMP"
 
@@ -44,7 +44,7 @@ while true ; do
             rm -rf ${DIRname}/slurm*
             rm -rf ${DIRname}/${prefix}.save
             ;;
-        -w|--wfn)
+        -W|--wfn)
             case "$2" in
                 "")
                     DIRname="."
@@ -59,6 +59,18 @@ while true ; do
                     rm -rf ${DIRname}/${prefix}.save/K*
                 fi
             fi
+            ;;
+        -w|--wfc)
+            case "$2" in
+                "")
+                    DIRname="."
+                    shift 2 ;;
+                *)
+                    DIRname=$2
+                    shift 2 ;;
+            esac
+            prefix=$(grep "prefix" "${DIRname}/IN.q" | awk -F"[']" '{print $2}')
+            rm -rf ${DIRname}/${prefix}.wfc*
             ;;
         -l|--log)
             case "$2" in
