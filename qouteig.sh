@@ -30,54 +30,54 @@ echo "====================q2eig.sh V.$version======================"
 echo "========================================================"
 #length unit in QE
 if [ -z $1 ]; then
-   alat=$(grep -a --text 'alat' ${QEOUTPUT} | head -1 | awk '{print $5}' )
-   bohrradius=0.52917721092
-   transconstant=$(echo $alat $bohrradius | awk '{print $1*$2}')
+    alat=$(grep -a --text 'alat' ${QEOUTPUT} | head -1 | awk '{print $5}' )
+    bohrradius=0.52917721092
+    transconstant=$(echo $alat $bohrradius | awk '{print $1*$2}')
 #   echo "alat is $transconstant Angstrom"
 else
-   transconstant=$1
+    transconstant=$1
 #   echo "alat is $transconstant Angstrom"
 fi
 ###############################################################
 #######################  File clearance  ######################
 if [ -f $EIGFILE ]; then
-   rm -f $EIGFILE
+    rm -f $EIGFILE
 fi
 
 if [ -f $KPTFILE ]; then
-   rm -f $KPTFILE
+    rm -f $KPTFILE
 fi
 
 if [ -f $TEMPEIGFILE ]; then
-   rm -f $TEMPEIGFILE
+    rm -f $TEMPEIGFILE
 fi
 
 if [ -f $BANDSFILE ]; then
-   rm -f $BANDSFILE
+    rm -f $BANDSFILE
 fi
 
 if [ -f $Helper1 ]; then
-   rm -f $Helper1
+    rm -f $Helper1
 fi
 
 if [ -f $Helper2 ]; then
-   rm -f $Helper2
+    rm -f $Helper2
 fi
 ###############################################################
 #Find the fermi energy from a previous nscf calculation
 if [ -d $FERMIENERGYFILE ]; then
-   echo "Reading Fermi level from ../nscf/QE.out ..."
-   if [ ! -z $(grep -a --text "Fermi" $FERMIENERGYFILE) ];then
-      EFermi=$(grep -a --text "Fermi" $FERMIENERGYFILE | awk '{print $5}')
-      echo "Find Fermi energy: Ef = $EFermi "
-   else
-      echo "Cannot find Fermi energy:"
-      echo "Maybe you use \"fixed\" occupation or your calculation failed"
-   fi
+    echo "Reading Fermi level from ../nscf/QE.out ..."
+    if [ ! -z $(grep -a --text "Fermi" $FERMIENERGYFILE) ];then
+        EFermi=$(grep -a --text "Fermi" $FERMIENERGYFILE | awk '{print $5}')
+        echo "Find Fermi energy: Ef = $EFermi "
+    else
+        echo "Cannot find Fermi energy:"
+        echo "Maybe you use \"fixed\" occupation or your calculation failed"
+    fi
 else
-   echo "Cannot find ../nscf/QE.out"
-   echo "Set Ef = 0"
-   EFermi=0
+    echo "Cannot find ../nscf/QE.out"
+    echo "Set Ef = 0"
+    EFermi=0
 fi
 ###############################################################
 echo "========================================================"
@@ -102,7 +102,7 @@ b3z=$(grep -a --text "b(3)" $QEOUTPUT | awk '{print $6}')
 #Find high-symmetry points from $QEINPUT and convert it into cartesian coordinates
 NumHiSymP=$(grep -a --text -A 1 "K_POINTS" $QEINPUT | tail -1 | awk '{print $1}')
 #it is actually the first High Symmetry Point
-HiSymCounter=2 
+HiSymCounter=2
 FlagChangeStartingPoint=1
 BaseLength=0.0
 KLength=0
@@ -132,100 +132,100 @@ echo "kptstartline = $kptstartline"
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 for ((i=1;i<=$numofkpts;i++))
 do
-kptline=$(echo $i $kptstartline | awk '{print $2+($1-1)}')
+    kptline=$(echo $i $kptstartline | awk '{print $2+($1-1)}')
 
-if [ $FlagChangeStartingPoint -eq 1 ]; then
+    if [ $FlagChangeStartingPoint -eq 1 ]; then
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-if [ $HiSymCounter -eq 2 ]; then
-   kpttargetline=$(echo $i $kptstartline | awk '{print $2+$1}')
-else
-   kpttargetline=$kptline
-fi
+        if [ $HiSymCounter -eq 2 ]; then
+            kpttargetline=$(echo $i $kptstartline | awk '{print $2+$1}')
+        else
+            kpttargetline=$kptline
+        fi
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #Read in the high symmetry points in crystal fractional coordinate
-Gx0=$(grep -a --text -A $HiSymCounter "K_POINTS" $QEINPUT | tail -1 | awk '{print $1}')
-Gy0=$(grep -a --text -A $HiSymCounter "K_POINTS" $QEINPUT | tail -1 | awk '{print $2}')
-Gz0=$(grep -a --text -A $HiSymCounter "K_POINTS" $QEINPUT | tail -1 | awk '{print $3}')
-echo "========================================================"
-echo "High symmetry points in crystal fractional coordinate:"
-echo "G0 = ($Gx0, $Gy0, $Gz0)"
-segmentlength=$(grep -a --text -A $HiSymCounter "K_POINTS" $QEINPUT | tail -1 | awk '{print $4}')
-echo $segmentlength >> $Helper1
+        Gx0=$(grep -a --text -A $HiSymCounter "K_POINTS" $QEINPUT | tail -1 | awk '{print $1}')
+        Gy0=$(grep -a --text -A $HiSymCounter "K_POINTS" $QEINPUT | tail -1 | awk '{print $2}')
+        Gz0=$(grep -a --text -A $HiSymCounter "K_POINTS" $QEINPUT | tail -1 | awk '{print $3}')
+        echo "========================================================"
+        echo "High symmetry points in crystal fractional coordinate:"
+        echo "G0 = ($Gx0, $Gy0, $Gz0)"
+        segmentlength=$(grep -a --text -A $HiSymCounter "K_POINTS" $QEINPUT | tail -1 | awk '{print $4}')
+        echo $segmentlength >> $Helper1
 ###########counter for the number of segments
-segmentcounter=0
+        segmentcounter=0
 ###########Switch off the flag for changing the starting point
-FlagChangeStartingPoint=0
+        FlagChangeStartingPoint=0
 ###########Update High symmetry pointer counter
-HiSymCounter=$(echo $HiSymCounter | awk '{print $1+1}')
+        HiSymCounter=$(echo $HiSymCounter | awk '{print $1+1}')
 
 #echo "kptline = $kptline"
 #echo "$(sed -n "$kptline p" $INFILE)" >> $KPTFILE
 #Read in the next point in cartesian coordinate
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-Gx=$(sed -n "$kpttargetline p" $QEOUTPUT | awk -F "=" '{print $2}' | awk -F "(" '{print $2}' | awk -F ")" '{print $1}' | awk '{print $1}') 
-Gy=$(sed -n "$kpttargetline p" $QEOUTPUT | awk -F "=" '{print $2}' | awk -F "(" '{print $2}' | awk -F ")" '{print $1}' | awk '{print $2}') 
-Gz=$(sed -n "$kpttargetline p" $QEOUTPUT | awk -F "=" '{print $2}' | awk -F "(" '{print $2}' | awk -F ")" '{print $1}' | awk '{print $3}') 
+        Gx=$(sed -n "$kpttargetline p" $QEOUTPUT | awk -F "=" '{print $2}' | awk -F "(" '{print $2}' | awk -F ")" '{print $1}' | awk '{print $1}')
+        Gy=$(sed -n "$kpttargetline p" $QEOUTPUT | awk -F "=" '{print $2}' | awk -F "(" '{print $2}' | awk -F ")" '{print $1}' | awk '{print $2}')
+        Gz=$(sed -n "$kpttargetline p" $QEOUTPUT | awk -F "=" '{print $2}' | awk -F "(" '{print $2}' | awk -F ")" '{print $1}' | awk '{print $3}')
 #Gx=$(sed -n "$kpttargetline p" $QEOUTPUT | awk '{print $3}')
 #Gy=$(sed -n "$kpttargetline p" $QEOUTPUT | awk '{print $4}')
 #Gz=$(sed -n "$kpttargetline p" $QEOUTPUT | awk '{print $5}')
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-echo "G = ($Gx, $Gy, $Gz)"
+        echo "G = ($Gx, $Gy, $Gz)"
 
 #High symmetry kpoint in cartesian coordinate
-Kx=$(echo $Gx0 $Gy0 $Gz0 $b1x $b2x $b3x | awk '{printf("%3.8f\n",$1*$4+$2*$5+$3*$6)}')
-Ky=$(echo $Gx0 $Gy0 $Gz0 $b1y $b2y $b3y | awk '{printf("%3.8f\n",$1*$4+$2*$5+$3*$6)}')
-Kz=$(echo $Gx0 $Gy0 $Gz0 $b1z $b2z $b3z | awk '{printf("%3.8f\n",$1*$4+$2*$5+$3*$6)}')
-echo "High symmetry kpoint in cartesian coordinate:"
-echo "K = ($Kx, $Ky, $Kz)"
+        Kx=$(echo $Gx0 $Gy0 $Gz0 $b1x $b2x $b3x | awk '{printf("%3.8f\n",$1*$4+$2*$5+$3*$6)}')
+        Ky=$(echo $Gx0 $Gy0 $Gz0 $b1y $b2y $b3y | awk '{printf("%3.8f\n",$1*$4+$2*$5+$3*$6)}')
+        Kz=$(echo $Gx0 $Gy0 $Gz0 $b1z $b2z $b3z | awk '{printf("%3.8f\n",$1*$4+$2*$5+$3*$6)}')
+        echo "High symmetry kpoint in cartesian coordinate:"
+        echo "K = ($Kx, $Ky, $Kz)"
 
-echo "segmentlength = $segmentlength"
+        echo "segmentlength = $segmentlength"
 #Delta G in cartesian coordinates
-DGx=$(echo $Gx $Kx | awk '{print $1-$2}')
-DGy=$(echo $Gy $Ky | awk '{print $1-$2}')
-DGz=$(echo $Gz $Kz | awk '{print $1-$2}')
+        DGx=$(echo $Gx $Kx | awk '{print $1-$2}')
+        DGy=$(echo $Gy $Ky | awk '{print $1-$2}')
+        DGz=$(echo $Gz $Kz | awk '{print $1-$2}')
 
 #echo "DG = ($DGx, $DGy, $DGz)"
 
-DLength=$(echo $DGx $DGy $DGz | awk '{printf("%3.8f\n",sqrt($1*$1+$2*$2+$3*$3))}')
-fi
+        DLength=$(echo $DGx $DGy $DGz | awk '{printf("%3.8f\n",sqrt($1*$1+$2*$2+$3*$3))}')
+    fi
 
-if [ $i -eq 1 -o $segmentlength -eq 1 ];then
-KLength=$(echo $KLength| awk '{print $1}' )
-else
-KLength=$(echo $KLength $DLength | awk '{print $1+$2}' )
-fi
+    if [ $i -eq 1 -o $segmentlength -eq 1 ];then
+        KLength=$(echo $KLength| awk '{print $1}' )
+    else
+        KLength=$(echo $KLength $DLength | awk '{print $1+$2}' )
+    fi
 #echo "KLength = $KLength"
 #transform into VASP unit
-KLengthout=$(echo $KLength $transconstant | awk '{printf("%15.10f",$1/$2)}')
-echo -e "$KLengthout " >> $KPTFILE
+    KLengthout=$(echo $KLength $transconstant | awk '{printf("%15.10f",$1/$2)}')
+    echo -e "$KLengthout " >> $KPTFILE
 
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-eigstartline=$(echo $numoflines $i $kptstartline2 | awk '{print $3+2+($1+3)*($2-1)}')
+    eigstartline=$(echo $numoflines $i $kptstartline2 | awk '{print $3+2+($1+3)*($2-1)}')
 #echo $eigstartline
-eigendline=$(echo $eigstartline $numoflines | awk '{print $1+$2}')
+    eigendline=$(echo $eigstartline $numoflines | awk '{print $1+$2}')
 #echo $eigendline
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-for ((j=$eigstartline;j<$eigendline+1;j++))
-do
-echo -n -e "$(sed -n "$j p" $INFILE)" >> $TEMPEIGFILE
-done
-echo -e "" >> $TEMPEIGFILE
+    for ((j=$eigstartline;j<$eigendline+1;j++))
+    do
+        echo -n -e "$(sed -n "$j p" $INFILE)" >> $TEMPEIGFILE
+    done
+    echo -e "" >> $TEMPEIGFILE
 ################################################################
 ####################Sorting the eigenvalues#####################
-tail -1 $TEMPEIGFILE | awk ' {split( $0, a, " " ); asort( a ); for( i = 1; i <= length(a); i++ ) printf( "%s ", a[i] ); printf( "\n" ); }'>> $EIGFILE
+    tail -1 $TEMPEIGFILE | awk ' {split( $0, a, " " ); asort( a ); for( i = 1; i <= length(a); i++ ) printf( "%s ", a[i] ); printf( "\n" ); }'>> $EIGFILE
 ################################################################
 #Judge if we need to turn on the $FlagChangeStartingPoint
-segmentcounter=$(echo $segmentcounter | awk '{print $1+1}')
-if [ $HiSymCounter -eq 3 ];then
-   if [ $segmentcounter -gt $segmentlength ]; then
-      FlagChangeStartingPoint=1
-   fi
-else
-   if [ $segmentcounter -eq $segmentlength ]; then
-      FlagChangeStartingPoint=1
-   fi
-fi
+    segmentcounter=$(echo $segmentcounter | awk '{print $1+1}')
+    if [ $HiSymCounter -eq 3 ];then
+        if [ $segmentcounter -gt $segmentlength ]; then
+            FlagChangeStartingPoint=1
+        fi
+    else
+        if [ $segmentcounter -eq $segmentlength ]; then
+            FlagChangeStartingPoint=1
+        fi
+    fi
 done
 ################################################################
 ############## Paste the klength and eigs together #############
@@ -235,11 +235,11 @@ paste -d" " $KPTFILE $EIGFILE > $BANDSFILE
 echo "numofbnds = $numofbnds"
 ############ Set Fermi energy as the reference energy ##########
 awk '{
-     for (i=1;i<='${numofbnds}';i++){
-         printf("%3.6f ",$i-('${EFermi}'))
-     }
-     printf("\n")
-}' $EIGFILE > $EIGSHIFTFILE
+        for (i=1;i<='${numofbnds}';i++){
+            printf("%3.6f ",$i-('${EFermi}'))
+        }
+        printf("\n")
+        }' $EIGFILE > $EIGSHIFTFILE
 paste -d" " $KPTFILE $EIGSHIFTFILE > $BANDSSHIFTFILE
 ################################################################
 echo "=======================Finished!========================"

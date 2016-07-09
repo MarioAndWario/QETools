@@ -84,7 +84,7 @@ while true ; do
                     shift 2 ;;
             esac
             rm -rf ${DIRname}/JOB.*
-            rm -rf ${DIRname}/slurm*
+            rm -rf ${DIRname}/slurm-*
             ;;
         -h)
             shift
