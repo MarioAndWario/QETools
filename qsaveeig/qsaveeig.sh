@@ -17,7 +17,7 @@
 #are in Hartree unit, 1 Ha = 27.2113850560 eV = 2 Ry
 Ha2eV='27.2113850560'
 ######################### Variables ###########################
-version='1.1'
+version='2.0'
 QEINPUT="QE.in"
 QEOUTPUT="QE.out"
 INFILE="QE.out"
@@ -33,7 +33,7 @@ Helper2="helper2.dat"
 #sortflag=1 means we will sort the eigenvalues in increasing order
 sortflag=0
 echo "========================================================"
-echo "====================q3eig.sh V.$version======================"
+echo "====================qsaveeig.sh V.$version==================="
 echo "========================================================"
 ################# Get prefix ####################
 prefix=$(grep "prefix" ${QEINPUT} | awk -F"[']" '{print $2}' | awk '{print $1}')
@@ -276,7 +276,7 @@ fi
 echo $VBMindex $numofkpts $numofbnds $(tail -1 $KPTFILE) > $Helper2
 paste -d" " $KPTFILE $EIGFILE > $BANDSFILE
 ################################################################
-echo "numofbnds = $numofbnds"
+#echo "numofbnds = $numofbnds"
 ############ Set Fermi energy as the reference energy ##########
 awk '{
         for (i=1;i<='${numofbnds}';i++){

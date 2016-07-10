@@ -9,10 +9,13 @@
 ###############################################################
 #Author: Meng Wu, Ph.D. Candidate in Physics
 #Affiliation: University of California, Berkeley
+#Version: 1.0
 #Date: Aug. 31, 2015
-#Verison: 1.0
+# ------
+#Verison: 2.0
+#Date: Jul. 09, 2016
 ######################### Variables ###########################
-version='1.0'
+version='2.0'
 QEINPUT="QE.in"
 QEOUTPUT="QE.out"
 INFILE="QE.out"
@@ -26,7 +29,7 @@ FERMIENERGYFILE="../nscf/QE.out"
 Helper1="helper1.dat"
 Helper2="helper2.dat"
 echo "========================================================"
-echo "====================q2eig.sh V.$version======================"
+echo "====================qouteig.sh V.$version===================="
 echo "========================================================"
 #length unit in QE
 if [ -z $1 ]; then
@@ -232,7 +235,7 @@ done
 echo $VBMindex $numofkpts $numofbnds $(tail -1 $KPTFILE) > $Helper2
 paste -d" " $KPTFILE $EIGFILE > $BANDSFILE
 ################################################################
-echo "numofbnds = $numofbnds"
+#echo "numofbnds = $numofbnds"
 ############ Set Fermi energy as the reference energy ##########
 awk '{
         for (i=1;i<='${numofbnds}';i++){
