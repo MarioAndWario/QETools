@@ -4,6 +4,7 @@
 # -a$DIR/--all=$DIR : rm all output files
 # -w$DIR/--wfn=$DIR : rm wfn in *.save directory
 # -l$DIR/--log=$DIR : rm log files
+# -e$DIR/--eig=$DIR : rm eigenvalue and helper files
 
 # ======
 # read the options
@@ -20,7 +21,7 @@
 # ======
 # getopt just like a rearrangement of string
 
-TEMP=`getopt -o ha::W::w::l:: --long --help,all::,wfn::,wfc::,log:: -n 'Some errors!' -- "$@"`
+TEMP=`getopt -o ha::W::w::l::e:: --long --help,all::,wfn::,wfc::,log::,eig:: -n 'Some errors!' -- "$@"`
 #echo "${TEMP}"
 eval set -- "$TEMP"
 
@@ -85,6 +86,21 @@ while true ; do
             esac
             rm -rf ${DIRname}/JOB.*
             rm -rf ${DIRname}/slurm-*
+            ;;
+        -e|--eig)
+            case "$2" in
+                "")
+                    DIRname="."
+                    shift 2 ;;
+                *)
+                    DIRname=$2
+                    shift 2 ;;
+            esac
+            rm -rf ${DIRname}/eigenvalue*
+            rm -rf ${DIRname}/Klength.dat
+            rm -rf ${DIRname}/helper*
+            rm -rf ${DIRname}/tempEig.dat
+            rm -rf ${DIRname}/Eig.*
             ;;
         -h)
             shift
