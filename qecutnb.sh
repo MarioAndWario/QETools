@@ -95,4 +95,4 @@ awk -v nbnd="${numofbnds}" '
      }
      write_temp = 0;
   }
-}' Eig.dat > out
+}' Eig.dat > "ecut_nb.dat"
