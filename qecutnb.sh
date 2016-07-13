@@ -8,10 +8,10 @@
 ###############################################################
 #Author: Meng Wu, Ph.D. Candidate in Physics
 #Affiliation: University of California, Berkeley
-#Version: Beta
+#Version: 1.0
 #Date: Jul. 12, 2016
 ######################### Variables ###########################
-version='Beta'
+version='1.0'
 QEINPUT="QE.in"
 QEOUTPUT="QE.out"
 INFILE="QE.out"
@@ -26,6 +26,12 @@ echo "========================================================"
 if [ -f $EIGFILE ]; then
     rm -f $EIGFILE
 fi
+
+if [ -f $TEMPEIGFILE ]; then
+    rm -f $TEMPEIGFILE
+fi
+
+
 ###############################################################
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #numofbnds=$(sed -n '1p' $INFILE | awk '{print $3}' | awk -F"," '{print $1}' )
@@ -33,7 +39,6 @@ numofbnds=$(grep -a --text 'number of Kohn-Sham states' $QEOUTPUT | awk -F "=" '
 #numofkpts=$(sed -n '1p' $INFILE | awk '{print $5}')
 numofkpts=$(grep -a --text 'number of k points=' $QEOUTPUT | awk -F "=" '{print $2}' | awk '{print $1}')
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-echo "========================================================"
 echo "number of kpoints = $numofkpts, number of bands = $numofbnds"
 #if numofbnds is undividable by 10
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -48,7 +53,7 @@ numoflines=$(echo $numofbnds $bandsperline | awk '{print int(($1+$2-1)/$2)}')
 #Take special notice of HiSymCounter=2, which is the first one
 kptstartline2=$(grep -a --text -n 'End of band structure calculation' $QEOUTPUT | awk -F ":" '{print $1+2}')
 kptstartline=$(grep -a --text -n 'number of k points=' $QEOUTPUT | awk -F ":" '{print $1}'| awk '{print $1+2}')
-echo "kptstartline = $kptstartline"
+#echo "kptstartline = $kptstartline"
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 eigstartline=$(echo $kptstartline2 | awk '{print $1+2}')
 #echo $eigstartline
@@ -67,7 +72,6 @@ tail -1 $TEMPEIGFILE | awk ' {split( $0, a, " " ); asort( a ); for( i = 1; i <= 
 
 awk -v nbnd="${numofbnds}" '
 {
-  write_temp = 1
   break_all = 0
   for (j=0;j<20;j++)
   {
@@ -81,10 +85,6 @@ awk -v nbnd="${numofbnds}" '
      {
          if (($i)/13.605698066 < Ehigh )
          {
-            if (write_temp == 0) {
-               printf("%s %f %s %d \n","[0,",Ehigh,"Ry] : ib <= ",temp);
-               write_temp = 1;
-            }
             temp = i
          }
      }
@@ -92,7 +92,9 @@ awk -v nbnd="${numofbnds}" '
      {
         #printf("%s\n", "We have reached the upper range of bands");
         break_all = 1;
+        break
      }
-     write_temp = 0;
+     printf("%s %6.3f %s %d %s %6.3f %s \n","[0,",Ehigh,"Ry] : ib <= ",temp,", Eb < ", $temp,"eV");
   }
 }' Eig.dat > "ecut_nb.dat"
+echo "========================================================"
