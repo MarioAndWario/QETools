@@ -52,7 +52,7 @@ do
    startline=$(echo $i $numofkpt1 | awk '{print ($1-1)*$2+3}')
    endline=$(echo $i $numofkpt1 | awk '{print $1*$2+2}')
   #echo $startline $endline
-   echo "KPOINTS crystal" > ${OUTPUTPREFIX}${i}
+   echo "K_POINTS crystal" > ${OUTPUTPREFIX}${i}
    echo $numofkpt1 >> ${OUTPUTPREFIX}${i}
    sed -n "$startline, $endline p" $INPUT >> ${OUTPUTPREFIX}${i}
 done

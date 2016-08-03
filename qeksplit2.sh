@@ -55,7 +55,7 @@ do
     startline=$(echo $i $numofkpt1 | awk '{print ($1-1)*$2+3}')
     endline=$(echo $i $numofkpt1 | awk '{print $1*$2+2}')
   #echo $startline $endline
-    echo "KPOINTS crystal" > ${OUTPUTPREFIX}$i
+    echo "K_POINTS crystal" > ${OUTPUTPREFIX}$i
     echo $numofkpt1 >> ${OUTPUTPREFIX}$i
     sed -n "$startline, $endline p" $INPUT >> ${OUTPUTPREFIX}$i
 done
@@ -64,10 +64,10 @@ if [ $numoffiles -gt 1 ];then
 ##Special treatment of the last file
     startline=$(echo $numoffiles $numofkpt1 | awk '{print ($1-1)*$2+3}')
     if [ $DevFlag -eq 1 ]; then
-        echo "KPOINTS crystal" > ${OUTPUTPREFIX}$i
+        echo "K_POINTS crystal" > ${OUTPUTPREFIX}$i
         echo $numofkpt1 >> ${OUTPUTPREFIX}$i
     else
-        echo "KPOINTS crystal" > ${OUTPUTPREFIX}$i
+        echo "K_POINTS crystal" > ${OUTPUTPREFIX}$i
         echo $numofkpt2 >> ${OUTPUTPREFIX}$i
     fi
     sed -n "$startline, \$ p" $INPUT >> ${OUTPUTPREFIX}${numoffiles}
@@ -75,7 +75,7 @@ else
     if [ $numoffiles -eq 1 ]; then
 #Only one file
         startline=$(echo $numoffiles $numofkpt1 | awk '{print ($1-1)*$2+3}')
-        echo "KPOINTS crystal" > ${OUTPUTPREFIX}1
+        echo "K_POINTS crystal" > ${OUTPUTPREFIX}1
         echo $numoftotalkpts >> ${OUTPUTPREFIX}1
    #echo $numofkpt1
         sed -n "$startline, \$ p" $INPUT >> ${OUTPUTPREFIX}1
