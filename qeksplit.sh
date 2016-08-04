@@ -58,7 +58,8 @@ do
 done
 #Special treatment of the last file
    startline=$(echo $i $numofkpt1 | awk '{print ($1-1)*$2+3}')
-   echo $(echo $numofkpt1 $numofkpt2 | awk '{print $1+$2}') > ${OUTPUTPREFIX}${i}
+   echo "K_POINTS crystal" > ${OUTPUTPREFIX}${numoffiles}
+   echo $(echo $numofkpt1 $numofkpt2 | awk '{print $1+$2}') >> ${OUTPUTPREFIX}${numoffiles}
    sed -n "$startline, \$ p" $INPUT >> ${OUTPUTPREFIX}${numoffiles}
 #write log
 echo "Number of files = $numoffiles " >> $LOGFILE
