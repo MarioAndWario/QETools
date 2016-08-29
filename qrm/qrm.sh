@@ -5,7 +5,7 @@
 # -w$DIR/--wfn=$DIR : rm wfn in *.save directory
 # -l$DIR/--log=$DIR : rm log files
 # -e$DIR/--eig=$DIR : rm eigenvalue and helper files
-
+# -s$DIR/--save=$DIR : rm prefix.save directory in dos, pdos, ldos calculations
 # ======
 # read the options
 # `getopt -o` followed by short options
@@ -21,7 +21,8 @@
 # ======
 # getopt just like a rearrangement of string
 
-TEMP=`getopt -o ha::W::w::l::e:: --long --help,all::,wfn::,wfc::,log::,eig:: -n 'Some errors!' -- "$@"`
+
+TEMP=`getopt -o ha::W::w::l::e::s:: --long --help,all::,wfn::,wfc::,log::,eig::,save:: -n 'Some errors!' -- "$@"`
 #echo "${TEMP}"
 eval set -- "$TEMP"
 
@@ -40,7 +41,14 @@ while true ; do
                     DIRname=$2
                     shift 2 ;;
             esac
-            prefix=$(grep "prefix" "${DIRname}/IN.q" | awk -F"[']" '{print $2}')
+            if [ -f ${DIRname}/QE.in ]; then
+                prefix=$(grep "prefix" "${DIRname}/QE.in" | awk -F"[']" '{print $2}')
+            elif [ -f ${DIRname}/IN.q ]; then
+                prefix=$(grep "prefix" "${DIRname}/IN.q" | awk -F"[']" '{print $2}')
+            else
+                echo "--- No input file in ${DIRname}"
+                exit
+            fi
             rm -rf ${DIRname}/JOB.*
             rm -rf ${DIRname}/slurm*
             rm -rf ${DIRname}/${prefix}.save
@@ -54,9 +62,24 @@ while true ; do
                     DIRname=$2
                     shift 2 ;;
             esac
-            prefix=$(grep "prefix" "${DIRname}/IN.q" | awk -F"[']" '{print $2}')
-            if [ ! -z $prefix ]; then
-                if [ -d "./${prefix}.save" ]; then
+
+########
+#Decide wether or not to carry on based on if there is IN.q in current directory
+            if [ -f ${DIRname}/QE.in ]; then
+                echo "+++ Found PW input file in ${DIRname}"
+                prefix=$(grep "prefix" "${DIRname}/QE.in" | awk -F"[']" '{print $2}')
+            elif [ -f ${DIRname}/IN.q ]; then
+                echo "+++ Found PW input file in ${DIRname}"
+                prefix=$(grep "prefix" "${DIRname}/IN.q" | awk -F"[']" '{print $2}')
+            else
+                echo "--- No PW (-W) input file in ${DIRname}"
+                continue
+            fi
+########
+            # echo "prefix = ${prefix}"
+            if [ ! -z ${prefix} ]; then
+                if [ -d "${DIRname}/${prefix}.save" ]; then
+                    echo "+++ Deleting WFNDir K* in ${DIRname}/${prefix}.save"
                     rm -rf ${DIRname}/${prefix}.save/K*
                 fi
             fi
@@ -70,10 +93,51 @@ while true ; do
                     DIRname=$2
                     shift 2 ;;
             esac
-            prefix=$(grep "prefix" "${DIRname}/IN.q" | awk -F"[']" '{print $2}')
+
+            if [ -f ${DIRname}/QE.in ]; then
+                echo "+++ Found PW input file in ${DIRname}"
+                prefix=$(grep "prefix" "${DIRname}/QE.in" | awk -F"[']" '{print $2}')
+            elif [ -f ${DIRname}/IN.q ]; then
+                echo "+++ Found PW input file in ${DIRname}"
+                prefix=$(grep "prefix" "${DIRname}/IN.q" | awk -F"[']" '{print $2}')
+            else
+                echo "--- No PW (-w) input file in ${DIRname}"
+                continue
+            fi
+            echo "+++ Deleting WFNfile ${prefix}.wfc* in ${DIRname}"
             rm -rf ${DIRname}/${prefix}.wfc*
             rm -rf ${DIRname}/${prefix}.mix*
             rm -rf ${DIRname}/${prefix}.igk*
+            ;;
+        -s|--save)
+            case "$2" in
+                "")
+                    DIRname="."
+                    shift 2 ;;
+                *)
+                    DIRname=$2
+                    shift 2 ;;
+            esac
+
+            if [ -f "${DIRname}/dos.in" ]; then
+                echo "+++ Found DOS input file in ${DIRname}"
+                prefix=$(grep "prefix" "${DIRname}/dos.in" | awk -F"[']" '{print $2}')
+            elif [ -f ${DIRname}/pp.in ]; then
+                echo "+++ Found LDOS input file in ${DIRname}"
+
+                prefix=$(grep "prefix" "${DIRname}/pp.in" | awk -F"[']" '{print $2}')
+            elif [ -f ${DIRname}/projwfc.in ]; then
+                echo "+++ Found PDOS input file in ${DIRname}"
+                prefix=$(grep "prefix" "${DIRname}/projwfc.in" | awk -F"[']" '{print $2}')
+            else
+                echo "--- No DOS input file in ${DIRname}"
+                continue
+            fi
+
+            if [ -d ${DIRname}/${prefix}.save ]; then
+                echo "+++ Deleting ${prefix}.save in ${DIRname} ->"
+                rm -rf ${DIRname}/${prefix}.save
+            fi
             ;;
         -l|--log)
             case "$2" in
@@ -105,16 +169,23 @@ while true ; do
         -h)
             shift
             echo "Usage: qcp.sh -a\$DIR/-all=\$DIR : rm all output files (default ./)"
-            echo "              -w\$DIR/-wfn=\$DIR : rm all wfns files (default ./)"
+            echo "              -w\$DIR/-wfc=\$DIR : rm all wfns files (default ./)"
             echo "              -l\$DIR/-log=\$DIR : rm all log files (default ./)"
+            echo "              -s\$DIR/-save=\$DIR : rm prefix.save directory in dos, ldos, pdos calcualtions (default ./)"
+            echo "              -W\$DIR/-wfn=\$DIR : rm prefix.save/K* directories (default ./)"
 
-            break ;;
+            break
+            ;;
         --)
-            # echo "Usage: qcp.sh -w\$DIR/-wfn=\$DIR : cp -r $DIR/*.save . (default ../scf)"
-            # echo "              -c\$DIR/-chg=\$DIR : only copy charge density from $DIR (default ../scf)"
-            # echo "              -p\$DIR/-pos=\$DIR : copy POS.final.q or/and CELL.final.q from $DIR(default ../relax)"
-            # echo "              -i\$DIR/-inp=\$DIR : copy $DIR:*.q . (default ../scf)"
-            exit 1 ;;
+            shift
+            echo "----------------------------------------------"
+#             echo "Usage: qcp.sh -a\$DIR/-all=\$DIR : rm all output files (default ./)"
+#             echo "              -w\$DIR/-wfc=\$DIR : rm all wfns files (default ./)"
+#             echo "              -l\$DIR/-log=\$DIR : rm all log files (default ./)"
+#             echo "              -s\$DIR/-save=\$DIR : rm prefix.save directory in dos, ldos, pdos calcualtions (default ./)"
+#             echo "              -W\$DIR/-wfn=\$DIR : rm prefix.save/K* directories (default ./)"
+            exit 0
+            ;;
     esac
 done
 
