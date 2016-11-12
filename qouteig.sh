@@ -14,8 +14,11 @@
 # ------
 #Verison: 2.0
 #Date: Jul. 09, 2016
+# ------
+#Version: 3.0
+#Date: Oct. 31, 2016
 ######################### Variables ###########################
-version='2.0'
+version='3.0'
 QEINPUT="QE.in"
 QEOUTPUT="QE.out"
 INFILE="QE.out"
@@ -84,8 +87,27 @@ else
 fi
 ###############################################################
 echo "========================================================"
-VBMindex=$(grep -a --text "number of electrons" $QEOUTPUT | awk -F "=" '{print int($2/2)}')
+echo "========================================================"
+numofelec=$(grep -a --text "number of electrons" $QEOUTPUT | awk -F "=" '{print int($2)}')
+############### See if non-colin ##################
+FlagNSpin=$(grep -a --text 'nspin' $QEINPUT | awk -F "=" '{print $2}' | awk '{print $1}')
+#echo ${FlagNSpin}
+if [ $FlagNSpin -eq 1 ]; then
+    echo "We are doing non-magnetic calculation: nspin = $FlagNSpin"
+    VBMindex=$(echo $numofelec | awk '{print int($1/2)}')
+elif [ $FlagNSpin -eq 2 ]; then
+    echo "We are doing collinear calculation: nspin = $FlagNSpin"
+    VBMindex=$(echo $numofelec | awk '{print int($1)}')
+elif [ $FlagNSpin -eq 4 ]; then
+    echo "We are doing non-collinear calculation: nspin = $FlagNSpin"
+    VBMindex=$(echo $numofelec | awk '{print int($1)}')
+else
+    echo "Error about nspin"
+    exit 1
+fi
+
 echo "Index of VBM = $VBMindex"
+
 ###############################################################
 #Find "reciprocal axes in cartesian coordinates" module and read the starting point for each segment
 #cat $QEOUTPUT | tr -d '\000'
@@ -244,5 +266,11 @@ awk '{
         printf("\n")
         }' $EIGFILE > $EIGSHIFTFILE
 paste -d" " $KPTFILE $EIGSHIFTFILE > $BANDSSHIFTFILE
+
+rm -rf $KPTFILE
+rm -rf $EIGSHIFTFILE
+rm -rf $EIGFILE
+rm -rf $TEMPEIGFILE
+
 ################################################################
 echo "=======================Finished!========================"

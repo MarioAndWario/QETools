@@ -40,7 +40,7 @@ while true ; do
                     DIRname=$2
                     shift 2 ;;
             esac
-            prefix=$(grep "prefix" "${DIRname}/IN.q" | awk -F"[']" '{print $2}')
+            prefix=$(grep "prefix" "${DIRname}/IN.q" | head -n 1 | awk -F"[']" '{print $2}')
             if [ ! -z $prefix ]; then
                 if [ -d "./${prefix}.save" ]; then
                     echo "${prefix}.save exists! q: quit, d: delete ?"
@@ -66,7 +66,7 @@ while true ; do
                     DIRname=$2
                     shift 2 ;;
             esac
-            prefix=$(grep "prefix" "${DIRname}/IN.q" | awk -F"[']" '{print $2}')
+            prefix=$(grep "prefix" "${DIRname}/IN.q" | head -n 1 | awk -F"[']" '{print $2}')
             if [ ! -z $prefix ]; then
                 if [ -d "./${prefix}.save" ]; then
                     echo "${prefix}.save exists! q: quit, d: delete ?"

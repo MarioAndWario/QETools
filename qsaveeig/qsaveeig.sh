@@ -36,7 +36,7 @@ echo "========================================================"
 echo "====================qsaveeig.sh V.$version==================="
 echo "========================================================"
 ################# Get prefix ####################
-prefix=$(grep "prefix" ${QEINPUT} | awk -F"[']" '{print $2}' | awk '{print $1}')
+prefix=$(grep "prefix" ${QEINPUT} | head -n 1 | awk -F "[']" '{print $2}' | awk '{print $1}')
 echo 'prefix : ' $prefix
 DATAFILE="./$prefix.save/data-file.xml"
 echo "Reading kpoints from $DATAFILE"
