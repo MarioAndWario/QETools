@@ -42,9 +42,9 @@ while true ; do
                     shift 2 ;;
             esac
             if [ -f ${DIRname}/QE.in ]; then
-                prefix=$(grep "prefix" "${DIRname}/QE.in" | awk -F"[']" '{print $2}')
+                prefix=$(grep "prefix" "${DIRname}/QE.in" | head -n 1 | awk -F"[']" '{print $2}')
             elif [ -f ${DIRname}/IN.q ]; then
-                prefix=$(grep "prefix" "${DIRname}/IN.q" | awk -F"[']" '{print $2}')
+                prefix=$(grep "prefix" "${DIRname}/IN.q" | head -n 1 | awk -F"[']" '{print $2}')
             else
                 echo "--- No input file in ${DIRname}"
                 exit
@@ -67,10 +67,10 @@ while true ; do
 #Decide wether or not to carry on based on if there is IN.q in current directory
             if [ -f ${DIRname}/QE.in ]; then
                 echo "+++ Found PW input file in ${DIRname}"
-                prefix=$(grep "prefix" "${DIRname}/QE.in" | awk -F"[']" '{print $2}')
+                prefix=$(grep "prefix" "${DIRname}/QE.in" | head -n 1 | awk -F"[']" '{print $2}')
             elif [ -f ${DIRname}/IN.q ]; then
                 echo "+++ Found PW input file in ${DIRname}"
-                prefix=$(grep "prefix" "${DIRname}/IN.q" | awk -F"[']" '{print $2}')
+                prefix=$(grep "prefix" "${DIRname}/IN.q" | head -n 1 | awk -F"[']" '{print $2}')
             else
                 echo "--- No PW (-W) input file in ${DIRname}"
                 continue
@@ -96,10 +96,11 @@ while true ; do
 
             if [ -f ${DIRname}/QE.in ]; then
                 echo "+++ Found PW input file in ${DIRname}"
-                prefix=$(grep "prefix" "${DIRname}/QE.in" | awk -F"[']" '{print $2}')
+                prefix=$(grep "prefix" "${DIRname}/QE.in" | head -n 1 | awk -F"[']" '{print $2}')
+
             elif [ -f ${DIRname}/IN.q ]; then
                 echo "+++ Found PW input file in ${DIRname}"
-                prefix=$(grep "prefix" "${DIRname}/IN.q" | awk -F"[']" '{print $2}')
+                prefix=$(grep "prefix" "${DIRname}/IN.q" | head -n 1 | awk -F"[']" '{print $2}')
             else
                 echo "--- No PW (-w) input file in ${DIRname}"
                 continue
@@ -121,14 +122,14 @@ while true ; do
 
             if [ -f "${DIRname}/dos.in" ]; then
                 echo "+++ Found DOS input file in ${DIRname}"
-                prefix=$(grep "prefix" "${DIRname}/dos.in" | awk -F"[']" '{print $2}')
+                prefix=$(grep "prefix" "${DIRname}/dos.in" | head -n 1 | awk -F"[']" '{print $2}')
             elif [ -f ${DIRname}/pp.in ]; then
                 echo "+++ Found LDOS input file in ${DIRname}"
 
-                prefix=$(grep "prefix" "${DIRname}/pp.in" | awk -F"[']" '{print $2}')
+                prefix=$(grep "prefix" "${DIRname}/pp.in" | head -n 1 | awk -F"[']" '{print $2}')
             elif [ -f ${DIRname}/projwfc.in ]; then
                 echo "+++ Found PDOS input file in ${DIRname}"
-                prefix=$(grep "prefix" "${DIRname}/projwfc.in" | awk -F"[']" '{print $2}')
+                prefix=$(grep "prefix" "${DIRname}/projwfc.in" | head -n 1 | awk -F"[']" '{print $2}')
             else
                 echo "--- No DOS input file in ${DIRname}"
                 continue
