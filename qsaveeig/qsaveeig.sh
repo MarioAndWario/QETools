@@ -17,7 +17,7 @@
 #are in Hartree unit, 1 Ha = 27.2113850560 eV = 2 Ry
 Ha2eV='27.2113850560'
 ######################### Variables ###########################
-version='2.0'
+version='3.0'
 QEINPUT="QE.in"
 QEOUTPUT="QE.out"
 INFILE="QE.out"
@@ -45,7 +45,9 @@ echo "Reading kpoints from $DATAFILE"
 if [ -z $1 ]; then
     alat=$(grep -a --text 'alat' ${QEOUTPUT} | head -1 | awk '{print $5}' )
     bohrradius=0.52917721092
-    transconstant=$(echo $alat $bohrradius | awk '{print $1*$2}')
+    # transconstant=$(echo $alat $bohrradius | awk '{print $1*$2}')
+    transconstant=$(echo $alat $bohrradius | awk '{print $1*$2/2.0/3.14159265359}')
+
 #   echo "alat is $transconstant Angstrom"
 else
     transconstant=$1
