@@ -10,6 +10,10 @@
 # ------
 #Version: 1.0
 #Date: Apr. 16, 2017
+# ------
+#Version: 2.0
+#Date: Dec. 27, 2017
+# Update the FlagNspin
 ######################### Variables ###########################
 
 version='1.0'
@@ -104,9 +108,15 @@ echo "========================================================"
 numofelec=$(grep -a --text "number of electrons" $QEOUTPUT | awk -F "=" '{print int($2)}')
 
 ############### See if non-colin ##################
-FlagNSpin=$(grep -a --text 'nspin' $QEINPUT | awk -F "=" '{print $2}' | awk '{print $1}')
-#echo ${FlagNSpin}
-if [ $FlagNSpin -eq 1 ]; then
+FlagNSpin=$(sed -e '/\s*!.*$/d' -e '/^\s*$/d' $QEINPUT | grep -a --text 'nspin' | awk -F "=" '{print $2}' | awk '{print $1}')
+
+echo "FlagNSpin = ${FlagNSpin}"
+
+
+if [ -z $FlagNSpin ]; then
+    echo "We are doing non-magnetic calculation: nspin = 1"
+    VBMindex=$(echo $numofelec | awk '{print int($1/2)}')
+elif [ $FlagNSpin -eq 1 ]; then
     echo "We are doing non-magnetic calculation: nspin = $FlagNSpin"
     VBMindex=$(echo $numofelec | awk '{print int($1/2)}')
 elif [ $FlagNSpin -eq 2 ]; then

@@ -12,9 +12,13 @@
 # ------
 #Version: 1.0
 #Date: Feb. 14, 2017
+# ------
+#Version: 2.0
+#Date: Nov. 30, 2017
+#Add support for "crystal_b" kpath
 ######################### Variables ###########################
 
-version='1.0'
+version='2.0'
 QEINPUT="QE.in"
 QEOUTPUT="QE.out"
 INFILE="QE.out"
@@ -28,10 +32,12 @@ FERMIENERGYFILE="../nscf/QE.out"
 Helper1="helper1.dat"
 Helper2="helper2.dat"
 
+TEMPkp="KP.temp.q"
+
 #####################
 # write bands with indices [BandStart, BandEnd] into eqp.dat form
-BandStart=11
-BandEnd=24
+BandStart=13
+BandEnd=34
 
 NumofEQPBands=$( echo "${BandEnd}-${BandStart}+1" | bc )
 
@@ -45,9 +51,7 @@ echo "========================================================"
 if [ -z $1 ]; then
     alat=$(grep -a --text 'alat' ${QEOUTPUT} | head -1 | awk '{print $5}' )
     bohrradius=0.52917721092
-    # transconstant=$(echo $alat $bohrradius | awk '{print $1*$2}')
-    transconstant=$(echo $alat $bohrradius | awk '{print $1*$2/2.0/3.14159265359}')
-
+    transconstant=$(echo $alat $bohrradius | awk '{print $1*$2}')
     #   echo "alat is $transconstant Angstrom"
 else
     transconstant=$1
@@ -79,6 +83,10 @@ fi
 if [ -f $Helper2 ]; then
     rm -f $Helper2
 fi
+
+if [ -f $TEMPkp ]; then
+    rm -f $TEMPkp
+fi
 ###############################################################
 #Find the fermi energy from a previous nscf calculation
 if [ -d $FERMIENERGYFILE ]; then
@@ -100,23 +108,23 @@ echo "========================================================"
 echo "========================================================"
 numofelec=$(grep -a --text "number of electrons" $QEOUTPUT | awk -F "=" '{print int($2)}')
 ############### See if non-colin ##################
-FlagNSpin=$(grep -a --text 'nspin' $QEINPUT | awk -F "=" '{print $2}' | awk '{print $1}')
-#echo ${FlagNSpin}
-if [ $FlagNSpin -eq 1 ]; then
-    echo "We are doing non-magnetic calculation: nspin = $FlagNSpin"
-    VBMindex=$(echo $numofelec | awk '{print int($1/2)}')
-elif [ $FlagNSpin -eq 2 ]; then
-    echo "We are doing collinear calculation: nspin = $FlagNSpin"
-    VBMindex=$(echo $numofelec | awk '{print int($1)}')
-elif [ $FlagNSpin -eq 4 ]; then
-    echo "We are doing non-collinear calculation: nspin = $FlagNSpin"
-    VBMindex=$(echo $numofelec | awk '{print int($1)}')
-else
-    echo "Error about nspin"
-    exit 1
-fi
+# FlagNSpin=$(grep -a --text 'nspin' $QEINPUT | awk -F "=" '{print $2}' | awk '{print $1}')
+# #echo ${FlagNSpin}
+# if [ $FlagNSpin -eq 1 ]; then
+#     echo "We are doing non-magnetic calculation: nspin = $FlagNSpin"
+#     VBMindex=$(echo $numofelec | awk '{print int($1/2)}')
+# elif [ $FlagNSpin -eq 2 ]; then
+#     echo "We are doing collinear calculation: nspin = $FlagNSpin"
+#     VBMindex=$(echo $numofelec | awk '{print int($1)}')
+# elif [ $FlagNSpin -eq 4 ]; then
+#     echo "We are doing non-collinear calculation: nspin = $FlagNSpin"
+#     VBMindex=$(echo $numofelec | awk '{print int($1)}')
+# else
+#     echo "Error about nspin"
+#     exit 1
+# fi
 
-echo "Index of VBM = $VBMindex"
+# echo "Index of VBM = $VBMindex"
 
 ###############################################################
 #Find "reciprocal axes in cartesian coordinates" module and read the starting point for each segment
@@ -169,10 +177,10 @@ echo "kptstartline = $kptstartline"
 for ((i=1;i<=$numofkpts;i++))
 do
     if [ $(echo "$i%100" | bc) == "0" ]; then
-       echo "ik = ${i}"
+        echo "ik = ${i}"
     fi
     kptline=$(echo $i $kptstartline | awk '{print $2+($1-1)}')
-    
+
     # echo "G = ($Gx, $Gy, $Gz)"
     # #High symmetry kpoint in cartesian coordinate
     # Kx=$(echo $Gx0 $Gy0 $Gz0 $b1x $b2x $b3x | awk '{printf("%3.8f\n",$1*$4+$2*$5+$3*$6)}')
@@ -201,14 +209,40 @@ do
 
 done
 
-for ((i=1;i<=$numofkpts;i++))
-do
-   # kptline in KP.q
-   kptline=$(echo $i | awk '{print ($1+2)}')
-   sed -n "${kptline} p" KP.q | awk -v numband=${NumofEQPBands} '{printf("%14.9f  %14.9f  %14.9f %7d \n",$1, $2, $3, numband)}' >> $EIGFILE
+KPstartline=$(grep -n ' cryst. coord.' ./QE.out | awk -F ":" '{print $1+1}')
+KPendline=$(echo "${KPstartline} + ${numofkpts} - 1" | bc)
 
-   sed -n "${i} p" ${TEMPEIGFILE} | awk -v bandstart=${BandStart} -v bandend=${BandEnd} '{for (i=bandstart;i<=bandend;i++) printf("%8d %8d %16.9f \n",1,i,$i) }' >> $EIGFILE
-done
+echo "KPstartline = $KPstartline, KPendline = $KPendline"
+
+sed -n "${KPstartline}, ${KPendline} p" ${QEOUTPUT} | awk -F ")," '{print $1}' | awk '{printf("%10.7f  %10.7f  %10.7f \n",$5,$6,$7)}' > ${TEMPkp}
+
+flag_kp=$(sed -n "1p" KP.q | awk '{print $2}')
+
+echo "flag_kp = ${flag_kp}"
+
+if [ ${flag_kp} == "crystal" ]; then
+    echo " ====== We will use kpoints in KP.q file! ====== "
+    for ((i=1;i<=$numofkpts;i++))
+    do
+        # kptline in KP.q
+        kptline=$(echo $i | awk '{print ($1+2)}')
+        sed -n "${kptline} p" KP.q | awk -v numband=${NumofEQPBands} '{printf("%14.9f  %14.9f  %14.9f %7d \n",$1, $2, $3, numband)}' >> $EIGFILE
+
+        sed -n "${i} p" ${TEMPEIGFILE} | awk -v bandstart=${BandStart} -v bandend=${BandEnd} '{for (i=bandstart;i<=bandend;i++) printf("%8d %8d %16.9f \n",1,i,$i) }' >> $EIGFILE
+    done
+else
+    echo " ====== We will use kpoints in QE.out file! ====== "
+    for ((i=1;i<=$numofkpts;i++))
+    do
+        # kptline in KP.temp.q
+        kptline=$(echo $i | awk '{print ($1)}')
+        echo "kptline = $kptline"
+        sed -n "${kptline} p" ${TEMPkp} | awk -v numband=${NumofEQPBands} '{printf("%14.9f  %14.9f  %14.9f %7d \n",$1, $2, $3, numband)}' >> $EIGFILE
+
+        sed -n "${i} p" ${TEMPEIGFILE} | awk -v bandstart=${BandStart} -v bandend=${BandEnd} '{for (i=bandstart;i<=bandend;i++) printf("%8d %8d %16.9f \n",1,i,$i) }' >> $EIGFILE
+    done
+fi
+
 
 ################################################################
 echo "=======================Finished!========================"

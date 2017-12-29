@@ -159,6 +159,15 @@ numoflines=$(echo $numofbnds $bandsperline | awk '{print int(($1+$2-1)/$2)}')
 #Take special notice of HiSymCounter=2, which is the first one
 kptstartline2=$(grep -a --text -n 'End of band structure calculation' $QEOUTPUT | awk -F ":" '{print $1+2}')
 kptstartline=$(grep -a --text -n 'number of k points=' $QEOUTPUT | awk -F ":" '{print $1}'| awk '{print $1+2}')
+
+echo "kptstartline2 = $kptstartline2"
+
+if [ -z $kptstartline2 ]; then
+   echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+   echo "You are not doing a band structure calculations, check your IN.q!"
+   exit 123
+fi
+
 echo "kptstartline = $kptstartline"
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 for ((i=1;i<=$numofkpts;i++))
