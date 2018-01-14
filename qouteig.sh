@@ -41,15 +41,21 @@ echo "========================================================"
 #length unit in QE
 if [ -z $1 ]; then
     alat=$(grep -a --text 'alat)' ${QEOUTPUT} | head -1 | awk '{print $5}' )
+<<<<<<< HEAD
+=======
+#    echo "alat = ${alat}"
+>>>>>>> 69332e67a9ee9313eef3ed9dbea3f86bf4cf3389
     bohrradius=0.52917721092
     # transconstant=$(echo $alat $bohrradius | awk '{print $1*$2}')
     transconstant=$(echo $alat $bohrradius | awk '{print $1*$2/2.0/3.14159265359}')
 
-   echo "alat is $transconstant Angstrom"
+#   echo "alat is $transconstant Angstrom"
 else
     transconstant=$1
-   echo "alat is $transconstant Angstrom"
+#   echo "alat is $transconstant Angstrom"
 fi
+
+
 ###############################################################
 #######################  File clearance  ######################
 if [ -f $EIGFILE ]; then
