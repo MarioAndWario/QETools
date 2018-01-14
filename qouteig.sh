@@ -40,16 +40,19 @@ echo "====================qouteig.sh V.$version===================="
 echo "========================================================"
 #length unit in QE
 if [ -z $1 ]; then
-    alat=$(grep -a --text 'alat' ${QEOUTPUT} | head -1 | awk '{print $5}' )
+    alat=$(grep -a --text 'alat)' ${QEOUTPUT} | head -1 | awk '{print $5}' )
+    echo "alat = ${alat}"
     bohrradius=0.52917721092
     # transconstant=$(echo $alat $bohrradius | awk '{print $1*$2}')
     transconstant=$(echo $alat $bohrradius | awk '{print $1*$2/2.0/3.14159265359}')
 
-#   echo "alat is $transconstant Angstrom"
+   echo "alat is $transconstant Angstrom"
 else
     transconstant=$1
-#   echo "alat is $transconstant Angstrom"
+   echo "alat is $transconstant Angstrom"
 fi
+
+
 ###############################################################
 #######################  File clearance  ######################
 if [ -f $EIGFILE ]; then
@@ -96,7 +99,7 @@ echo "========================================================"
 echo "========================================================"
 numofelec=$(grep -a --text "number of electrons" $QEOUTPUT | awk -F "=" '{print int($2)}')
 ############### See if non-colin ##################
-FlagNSpin=$(grep -a --text 'nspin' $QEINPUT | awk -F "=" '{print $2}' | awk '{print $1}')
+FlagNSpin=$(grep -a --text 'nspin' $QEINPUT | awk -F "=" '{print $2}' | awk -F "," '{print $1}' | awk '{print $1}')
 #echo ${FlagNSpin}
 if [ $FlagNSpin -eq 1 ]; then
     echo "We are doing non-magnetic calculation: nspin = $FlagNSpin"

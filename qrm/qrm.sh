@@ -107,6 +107,7 @@ while true ; do
             fi
             echo "+++ Deleting WFNfile ${prefix}.wfc* in ${DIRname}"
             rm -rf ${DIRname}/${prefix}.wfc*
+            rm -rf ${DIRname}/${prefix}.hub*
             rm -rf ${DIRname}/${prefix}.mix*
             rm -rf ${DIRname}/${prefix}.igk*
             ;;
