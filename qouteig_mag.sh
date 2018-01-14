@@ -105,7 +105,7 @@ echo "========================================================"
 echo "========================================================"
 numofelec=$(grep -a --text "number of electrons" $QEOUTPUT | awk -F "=" '{print int($2)}')
 ############### See if non-colin ##################
-FlagNSpin=$(grep -a --text 'nspin' $QEINPUT | awk -F "=" '{print $2}' | awk '{print $1}')
+FlagNSpin=$(grep -a --text 'nspin' $QEINPUT | awk -F "=" '{print $2}' | awk -F "," '{print $1}' | awk '{print $1}')
 #echo ${FlagNSpin}
 if [ $FlagNSpin -eq 1 ]; then
     echo "We are doing non-magnetic calculation: nspin = $FlagNSpin"
