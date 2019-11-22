@@ -49,9 +49,15 @@ while true ; do
                 echo "--- No input file in ${DIRname}"
                 exit
             fi
+            echo "+++ Deleting save dir in ${DIRname}"
             rm -rf ${DIRname}/JOB.*
             rm -rf ${DIRname}/slurm*
+            rm -rf ${DIRname}/${prefix}.wfc*
+            rm -rf ${DIRname}/${prefix}.hub*
             rm -rf ${DIRname}/${prefix}.save
+            rm -rf ${DIRname}/WFN*
+            rm -rf ${DIRname}/bin*
+            rm -rf ${DIRname}/hdf5*
             ;;
         -W|--wfn)
             case "$2" in
