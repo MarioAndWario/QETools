@@ -41,15 +41,15 @@ echo "========================================================"
 #length unit in QE
 if [ -z $1 ]; then
     alat=$(grep -a --text 'alat)' ${QEOUTPUT} | head -1 | awk '{print $5}' )
-    echo "alat = ${alat}"
+#    echo "alat = ${alat}"
     bohrradius=0.52917721092
     # transconstant=$(echo $alat $bohrradius | awk '{print $1*$2}')
     transconstant=$(echo $alat $bohrradius | awk '{print $1*$2/2.0/3.14159265359}')
 
-   echo "alat is $transconstant Angstrom"
+#   echo "alat is $transconstant Angstrom"
 else
     transconstant=$1
-   echo "alat is $transconstant Angstrom"
+#   echo "alat is $transconstant Angstrom"
 fi
 
 
