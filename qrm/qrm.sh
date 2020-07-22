@@ -55,9 +55,17 @@ while true ; do
             rm -rf ${DIRname}/${prefix}.wfc*
             rm -rf ${DIRname}/${prefix}.hub*
             rm -rf ${DIRname}/${prefix}.save
+            rm -rf ${DIRname}/${prefix}.xml
             rm -rf ${DIRname}/WFN*
             rm -rf ${DIRname}/bin*
             rm -rf ${DIRname}/hdf5*
+	    rm -rf ${DIRname}/QE*
+	    rm -rf ${DIRname}/eigen*
+	    rm -rf ${DIRname}/helper*
+	    rm -rf ${DIRname}/bands
+	    rm -rf ${DIRname}/temp*
+	    rm -rf ${DIRname}/*.out
+	    rm -rf ${DIRname}/*.dat	    
             ;;
         -W|--wfn)
             case "$2" in
@@ -87,6 +95,7 @@ while true ; do
                 if [ -d "${DIRname}/${prefix}.save" ]; then
                     echo "+++ Deleting WFNDir K* in ${DIRname}/${prefix}.save"
                     rm -rf ${DIRname}/${prefix}.save/K*
+                    rm -rf ${DIRname}/${prefix}.save/wfc*
                 fi
             fi
             ;;
