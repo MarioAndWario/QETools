@@ -82,18 +82,18 @@ while true ; do
             fi
             mkdir "${prefix}.save"
             echo "Copy charge density file from ${DIRname}/${prefix}.save"
-            cp "${DIRname}/${prefix}.save/charge-density.dat" "./${prefix}.save"
+            cp ${DIRname}/${prefix}.save/charge-density.dat ./${prefix}.save
 
             # copy rho%ns or rho%ns_nc into current dir
-            cp "${DIRname}/${prefix}.occup" "./"
+            #cp "${DIRname}/${prefix}.occup" "./"
 
             # copy magnetization files
-            cp "${DIRname}/${prefix}.save/magnetization.x.dat" "./${prefix}.save"
-            cp "${DIRname}/${prefix}.save/magnetization.y.dat" "./${prefix}.save"
-            cp "${DIRname}/${prefix}.save/magnetization.z.dat" "./${prefix}.save"
-            cp "${DIRname}/${prefix}.save/spin-polarization.dat" "./${prefix}.save"
+            # cp "${DIRname}/${prefix}.save/magnetization.x.dat" "./${prefix}.save"
+            # cp "${DIRname}/${prefix}.save/magnetization.y.dat" "./${prefix}.save"
+            cp -rf ${DIRname}/${prefix}.save/occup.txt ./${prefix}.save
+            cp ${DIRname}/${prefix}.save/*.UPF ./${prefix}.save
             #
-            cp "${DIRname}/${prefix}.save/data-file.xml" "./${prefix}.save"
+            cp ${DIRname}/${prefix}.save/data-file-schema.xml ./${prefix}.save
             ;;
         -p|--pos)
             case "$2" in
