@@ -22,13 +22,13 @@ BANDSSHIFTFILE="eigenvalue.shift"
 FERMIENERGYFILE="../nscf/QE.out"
 Helper1="helper1.dat"
 Helper2="helper2.dat"
-
+NDeltaE=2
 echo "========================================================"
 echo "==================qouteig_freq_analysis.sh V.$version==================="
 echo "========================================================"
 
-if [ "$#" -ne 2 ]; then
-    echo "Usage: qouteig_freq_analysis.sh BandStart_inner BandEnd_inner"
+if [ "$#" -ne 2 || "$#" -ne 3 ]; then
+    echo "Usage: qouteig_freq_analysis.sh BandStart_inner BandEnd_inner [NDeltaE=2]"
     exit 1
 fi
 
@@ -53,6 +53,14 @@ else
     transconstant=$1
     #   echo "alat is $transconstant Angstrom"
 fi
+
+if [ -z $3 ]; then
+   NDeltaE=2
+else
+   NDeltaE=$3
+fi
+
+echo "N in N*DeltaE : ${NDeltaE}"
 
 ###############################################################
 #######################  File clearance  ######################
@@ -296,7 +304,7 @@ deltaE_list="1.0 2.0 3.0 4.0 5.0"
 # Loop over delta_freq_imag from 1.0 to 5.0, get corresponding number_imaginary_freqs
 for deltaE in $deltaE_list
 do
-    nimagfreq=$(echo "${deltaE} ${Delta_E}" | awk '{print 3.1415926/2.0*sqrt(10.0*$2/$1)}')
+    nimagfreq=$(echo "${deltaE} ${Delta_E} ${NDeltaE}" | awk '{print 3.1415926/2.0*sqrt($3*$2/$1)}')
     echo "deltaE = ${deltaE} nimagfreq = ${nimagfreq}"
 done
 ################################################################
