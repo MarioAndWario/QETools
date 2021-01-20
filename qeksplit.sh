@@ -1,21 +1,31 @@
 #!/bin/bash
 #This script split the kpts file into bins
-if [ -f "kpoints_all.dat" ]; then
-   echo "We are using subsampling q0 points"
-   INPUT="kpoints_all.dat"
-   SUBFLAG=1
-else
-   if [ -f "out.kgrid" ]; then
-      echo "We are using regular single q0 point"
-      INPUT="out.kgrid"
-      SUBFLAG=0
-   else
-      echo "No input kpoints file found, sorry ..."
-      exit 0
-   fi
-fi
+# if [ -f "kpoints_all.dat" ]; then
+#    echo "We are using subsampling q0 points"
+#    INPUT="kpoints_all.dat"
+#    SUBFLAG=1
+# else
+#    if [ -f "out.kgrid" ]; then
+#       echo "We are using regular single q0 point"
+#       INPUT="out.kgrid"
+#       SUBFLAG=0
+#    else
+#       echo "No input kpoints file found, sorry ..."
+#       exit 0
+#    fi
+# fi
 
-LOGFILE="kgrid.log"
+if [ $# -eq 0 ]; then
+   INPUT="rk.dat"
+elif [ $# -eq 1 ]; then
+   INPUT=$1
+else
+   echo "More than one argument."
+   exit 123
+fi
+echo "INPUT FILE: $INPUT"
+
+LOGFILE="qeksplit.log"
 OUTPUTPREFIX="KP"
 
 #Clean
