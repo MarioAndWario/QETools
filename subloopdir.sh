@@ -1,4 +1,5 @@
 #!/bin/bash
+# This script submits a series of scripts in the directories starting with $dir_header
 if [ $# -ne 2 ]; then
     echo "Usage loopdir.sh [dir_header] [script] "
     exit 123
